@@ -1,38 +1,38 @@
 # SkillBridge Backend API
 
-## 🚀 Overview
+## Overview
 
-SkillBridge is a backend API for managing a state-level training programme with **role-based access control (RBAC)** and a **secure monitoring system**.
+This project is a backend API for managing a state-level training programme. It handles users, batches, sessions, and attendance while ensuring that each user can only perform actions based on their role.
 
-The system supports multiple user roles with strictly enforced permissions and enables batch management, session tracking, and attendance recording.
+The system is designed with a strong focus on **authentication, authorization, and controlled data access**, simulating how such a platform would function in a real-world scenario.
 
 ---
 
-## 🌐 Live API
+## Live API
 
-🔗 Base URL:
+Base URL:
 https://skillbridge-so7v.onrender.com/
 
-📄 Swagger Docs:
+Swagger Docs:
 https://skillbridge-so7v.onrender.com/docs
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-* FastAPI (Backend framework)
+* FastAPI
 * PostgreSQL (Neon)
-* SQLAlchemy (ORM)
+* SQLAlchemy
 * JWT Authentication (python-jose)
 * Passlib (password hashing)
-* Pytest (testing)
+* Pytest
 * Render (deployment)
 
 ---
 
-## 🔐 Authentication & Roles
+## Authentication & Roles
 
-### Supported Roles
+The system supports multiple roles:
 
 * Student
 * Trainer
@@ -40,65 +40,68 @@ https://skillbridge-so7v.onrender.com/docs
 * Programme Manager
 * Monitoring Officer
 
+Authentication is handled using JWT tokens, and access to endpoints is controlled using role-based access control (RBAC).
+
 ---
 
-## 🔑 JWT Structure
+## Token Design
 
-### Standard Token (Login)
+### Standard JWT
+
+Used for normal operations:
 
 ```json
 {
   "user_id": 1,
   "role": "trainer",
-  "iat": "...",
   "exp": "..."
 }
 ```
 
-* Valid for 24 hours
-* Used for all protected endpoints
-
 ---
 
 ### Monitoring Token (Scoped)
+
+Generated via `/auth/monitoring-token`:
 
 ```json
 {
   "user_id": 5,
   "role": "monitoring_officer",
   "scope": "monitoring",
-  "exp": "1 hour"
+  "exp": "..."
 }
 ```
 
-* Generated via `/auth/monitoring-token`
-* Only valid for monitoring endpoints
-* Cannot be used elsewhere
+This token is required specifically for monitoring endpoints and cannot be used for other operations.
 
 ---
 
-## 🔒 Security Considerations
+## Core Functionality
 
-### Current Implementation
+### Batch & Session Management
 
-* Password hashing using passlib
-* JWT-based authentication
-* Role-based access control (RBAC)
-* Scoped tokens for monitoring
-
-### Known Limitation
-
-Tokens are not currently revocable.
-
-### Improvement (Future Work)
-
-* Implement token blacklisting (Redis)
-* Add refresh tokens
-* Use rotating signing keys
+* Trainers create batches
+* Invite tokens are generated for controlled student onboarding
+* Trainers create sessions under batches
 
 ---
 
-## ⚙️ API Endpoints
+### Student Flow
+
+* Students join batches using invite tokens
+* Students mark attendance for sessions
+
+---
+
+### Monitoring System
+
+* Monitoring officers use a separate scoped token
+* Access to attendance data is restricted and validated
+
+---
+
+## API Endpoints
 
 ### Auth
 
@@ -135,26 +138,25 @@ Tokens are not currently revocable.
 
 ---
 
-## 🧪 Sample CURL Commands
+## Sample CURL Usage
+
+### Signup
+
+```bash
+curl -X POST "https://new-ubkn.onrender.com/auth/signup?name=test&email=test@test.com&password=1234&role=student"
+```
+
+---
 
 ### Login
 
 ```bash
-curl -X POST "https://new-ubkn.onrender.com/auth/login?email=trainer@test.com&password=1234"
+curl -X POST "https://new-ubkn.onrender.com/auth/login?email=test@test.com&password=1234"
 ```
 
 ---
 
-### Create Session (Trainer)
-
-```bash
-curl -X POST "https://new-ubkn.onrender.com/sessions" \
--H "Authorization: Bearer <TOKEN>"
-```
-
----
-
-### Mark Attendance (Student)
+### Mark Attendance
 
 ```bash
 curl -X POST "https://new-ubkn.onrender.com/attendance/mark?session_id=1&status=present" \
@@ -163,52 +165,28 @@ curl -X POST "https://new-ubkn.onrender.com/attendance/mark?session_id=1&status=
 
 ---
 
-## 👥 Test Accounts
+## Token Usage Flow
 
-| Role               | Email                                       | Password |
-| ------------------ | ------------------------------------------- | -------- |
-| Trainer            | [trainer@test.com](mailto:trainer@test.com) | 1234     |
-| Student            | [student@test.com](mailto:student@test.com) | 1234     |
-| Monitoring Officer | [mo@test.com](mailto:mo@test.com)           | 1234     |
+1. Login → receive JWT token
+2. Use JWT for protected endpoints
+3. For monitoring access:
 
----
-
-## 🧠 Design Decisions
-
-### 1. Batch Invites
-
-* Token-based joining system
-* Allows controlled student onboarding
-* Prevents unauthorized batch access
+   * Call `/auth/monitoring-token` with API key
+   * Use returned token for monitoring endpoints
 
 ---
 
-### 2. Monitoring Token System
+## Validation & Error Handling
 
-* Separate token with limited scope
-* Prevents misuse of full-access JWT
-* Adds extra security layer
-
----
-
-### 3. RBAC Enforcement
-
-* Enforced at backend (not frontend)
-* Every endpoint validates role from JWT
+* 401 → Unauthorized
+* 403 → Forbidden
+* 404 → Not found
+* 405 → Method not allowed
+* 422 → Validation errors
 
 ---
 
-## ⚠️ Validation & Error Handling
-
-* Missing fields → 422
-* Unauthorized access → 401
-* Forbidden actions → 403
-* Invalid references → 404
-* Wrong method → 405
-
----
-
-## 🧪 Testing
+## Testing
 
 Run tests:
 
@@ -216,69 +194,77 @@ Run tests:
 pytest
 ```
 
-### Covered Cases
+Covers:
 
-* Signup & login
+* Authentication
 * Protected routes
-* Monitoring endpoint
-* Unauthorized access
+* Monitoring restrictions
 * Attendance access
 
 ---
 
-## 📦 Deployment
+## Security Notes
 
-* Hosted on Render
-* PostgreSQL on Neon
-* Environment variables managed securely
+* Passwords are hashed
+* JWT tokens used for authentication
+* Monitoring endpoints require scoped tokens
+
+### Known Limitation
+
+Tokens are not currently revocable.
+
+### Improvement
+
+Introduce token revocation / refresh mechanism for production-grade security.
 
 ---
 
-## ⚠️ What is Complete
+## Design Decisions
 
-* Core API (auth, batches, sessions, attendance)
-* RBAC enforcement
+* **Invite-based joining** ensures controlled access to batches
+* **RBAC enforced at backend** for security
+* **Scoped monitoring token** adds an extra layer of restriction
+* **Modular structure** improves maintainability
+
+---
+
+## What is Complete
+
+* Authentication and JWT system
+* Role-based access control
+* Batch, session, and attendance flow
 * Monitoring token system
-* Deployment
-* Pytest tests
+* Deployment and testing
 
 ---
 
-## ⚠️ What is Partial / Skipped
+## What is Partial / Simplified
 
-* Seed script (data created manually via API)
-* Advanced summary endpoints (basic implementation)
-* Multi-trainer batch mapping simplified
-
----
-
-If I had more time, I would focus on improving the data modelling and reporting layer. Specifically, I would implement proper aggregation queries for summary endpoints and introduce a structured seed script for realistic test data.
-
-Additionally, I would enhance the authentication system by adding refresh tokens and token revocation to improve security in a production scenario.
+* Summary/reporting endpoints are implemented at a basic level
+* Multi-trainer batch mapping is simplified
+* Seed data is created manually through API calls
 
 ---
 
-## 🔮 Future Improvements
+## What I Would Do Differently
 
-* Add seed script for demo data
-* Implement full reporting dashboards
-* Add pagination & filtering
-* Improve test coverage
-* Introduce refresh tokens
+If extended further, I would focus on improving the reporting layer with proper aggregation queries and structured seed data for realistic usage scenarios. Additionally, I would enhance the authentication system by introducing token revocation and refresh mechanisms to make it more production-ready.
 
 ---
 
-## 🎯 Key Learning
+## Deployment
 
-This project demonstrates:
-
-* API design with FastAPI
-* Secure authentication & authorization
-* Role-based system design
-* Real-world backend workflow
+* Backend deployed on Render
+* Database hosted on Neon
 
 ---
 
-## 👤 Author
+## Final Note
+
+The goal of this project was to build a structured backend system with clear role separation, secure access control, and realistic workflows. While some areas are simplified, the core system is fully functional and demonstrates the intended design.
+
+---
+
+## Author
 
 Lavannya Pradeep Rathod
