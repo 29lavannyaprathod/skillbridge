@@ -9,7 +9,7 @@ import os
 
 router = APIRouter()
 
-# ✅ Use stable hashing (no bcrypt issues)
+# Use stable hashing (no bcrypt issues)
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 def hash_password(password: str):
@@ -19,7 +19,7 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# 🔐 SIGNUP
+# SIGNUP
 @router.post("/auth/signup")
 def signup(name: str, email: str, password: str, role: str):
     db: Session = SessionLocal()
@@ -51,7 +51,7 @@ def signup(name: str, email: str, password: str, role: str):
     return {"access_token": token}
 
 
-# 🔐 LOGIN
+# LOGIN
 @router.post("/auth/login")
 def login(email: str, password: str):
     db: Session = SessionLocal()
@@ -66,7 +66,7 @@ def login(email: str, password: str):
     return {"access_token": token}
 
 
-# 🔐 MONITORING TOKEN
+# MONITORING TOKEN
 @router.post("/auth/monitoring-token")
 def monitoring_token(api_key: str, user=Depends(get_current_user)):
     if user["role"] != "monitoring_officer":
