@@ -275,4 +275,4 @@ This project demonstrates:
 
 ## 👤 Author
 
-Lavannya Rathod
+Lavannya Pradeep Rathod
