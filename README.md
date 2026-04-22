@@ -11,10 +11,10 @@ The system supports multiple user roles with strictly enforced permissions and e
 ## 🌐 Live API
 
 🔗 Base URL:
-https://new-ubkn.onrender.com/
+https://skillbridge-so7v.onrender.com/
 
 📄 Swagger Docs:
-https://new-ubkn.onrender.com/docs
+https://skillbridge-so7v.onrender.com/docs
 
 ---
 
