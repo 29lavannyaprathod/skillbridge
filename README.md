@@ -252,6 +252,12 @@ pytest
 
 ---
 
+## If I had more time, I would focus on improving the data modelling and reporting layer. Specifically, I would implement proper aggregation queries for summary endpoints and introduce a structured seed script for realistic test data.
+
+Additionally, I would enhance the authentication system by adding refresh tokens and token revocation to improve security in a production scenario.
+
+---
+
 ## 🔮 Future Improvements
 
 * Add seed script for demo data
